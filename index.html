@@ -1,0 +1,402 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Date Invitation</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:ital,wght@1,600&display=swap">
+<style>
+/* Layout: one blush-paper card per question, left-aligned, with a thin progress bar and faint hearts drifting behind. */
+:root {
+  --paper: #fff1f4;
+  --card: #fffafb;
+  --blush: #ffdfe7;
+  --ink: #3b0d21;
+  --ink-soft: #85485f;
+  --rose: #c8174f;
+  --rose-deep: #8e0f3a;
+  --line: #f1c3d0;
+  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  line-height: 1.55;
+  padding-block: 1.5rem 3rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  min-height: 100vh;
+}
+.hearts { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.hearts svg { position: absolute; fill: var(--rose); opacity: .11; }
+@media (prefers-reduced-motion: no-preference) {
+  .hearts svg { animation: bob var(--d, 9s) ease-in-out infinite alternate; }
+  @keyframes bob { from { transform: translateY(-10px) rotate(-6deg); } to { transform: translateY(14px) rotate(6deg); } }
+  .step { animation: rise .35s ease both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  #noBtn.fly { transition: left .18s ease, top .18s ease; }
+}
+.stage { position: relative; z-index: 1; max-width: 30rem; margin-inline: auto; display: flex; flex-direction: column; gap: 1.25rem; }
+.progress { display: flex; gap: .4rem; }
+.progress span { flex: 1; height: 5px; border-radius: 99px; background: var(--line); }
+.progress span.on { background: var(--rose); }
+.step { --px: 1.4rem; --py: 1.75rem; background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: var(--py) var(--px); box-shadow: 0 14px 36px -18px rgba(142, 15, 58, .35); display: flex; flex-direction: column; gap: 1.1rem; }
+.step:focus { outline: none; }
+.eyebrow { margin: 0; font-size: .78rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--rose); }
+h1, h2 { margin: 0; font-family: var(--font-display); font-style: italic; font-weight: 600; line-height: 1.15; color: var(--rose-deep); text-wrap: balance; }
+h1 { font-size: clamp(2.2rem, 9vw, 3.1rem); }
+h2 { font-size: clamp(1.8rem, 7vw, 2.4rem); }
+h2:focus, h1:focus { outline: none; }
+.lead { margin: 0; color: var(--ink-soft); }
+.row { display: flex; flex-wrap: wrap; gap: .8rem; align-items: center; }
+button, .btn { font: inherit; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border-radius: 14px; border: 1.5px solid var(--rose); padding: .75rem 1.4rem; font-weight: 600; text-decoration: none; min-height: 3rem; }
+.btn.primary { background: var(--rose); color: var(--card); }
+.btn.primary:hover:not(:disabled) { background: var(--rose-deep); border-color: var(--rose-deep); }
+.btn.ghost { background: transparent; color: var(--rose-deep); border-color: var(--line); }
+.btn.ghost:hover { border-color: var(--rose); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+:focus-visible { outline: 3px solid var(--rose-deep); outline-offset: 3px; }
+#yesBtn { --grow: 0; font-size: calc(1.1rem + var(--grow) * .06rem); padding: calc(.8rem + var(--grow) * .12rem) calc(1.5rem + var(--grow) * .2rem); }
+.noslot { display: inline-block; }
+#noBtn { background: var(--blush); color: var(--ink-soft); border-color: var(--line); }
+#noBtn.fly { position: fixed; z-index: 50; }
+.teasing { margin: 0; min-height: 1.6em; font-size: .95rem; color: var(--ink-soft); }
+.chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(5.4rem, 1fr)); gap: .6rem; }
+.chips.wide { grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr)); }
+.chip { background: var(--paper); color: var(--ink); border: 1.5px solid var(--line); border-radius: 14px; padding: .6rem .5rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .1rem; min-width: 0; min-height: 3.6rem; }
+.chip:hover { border-color: var(--rose); }
+.chip[aria-pressed="true"] { background: var(--rose); border-color: var(--rose); color: var(--card); }
+.chip small { font-size: .75rem; opacity: .85; }
+.chip .big { font-size: 1.5rem; font-weight: 600; line-height: 1.1; }
+.chip .name { font-weight: 600; }
+.field { display: flex; flex-direction: column; gap: .35rem; }
+.field label { font-size: .9rem; font-weight: 500; color: var(--ink-soft); }
+input[type="date"], input[type="time"], input[type="text"], textarea { font: inherit; min-height: 3rem; text-align: left; color: var(--ink); background: var(--paper); border: 1.5px solid var(--line); border-radius: 12px; padding: .65rem .8rem; width: 100%; min-width: 0; }
+input:focus, textarea:focus { border-color: var(--rose); }
+.nav { display: flex; justify-content: space-between; gap: .8rem; position: sticky; bottom: 0; z-index: 5; margin: .4rem calc(var(--px) * -1) calc(var(--py) * -1); padding: .8rem var(--px) calc(.8rem + env(safe-area-inset-bottom, 0px)); background: var(--card); border-top: 1px solid var(--line); border-radius: 0 0 22px 22px; }
+.nav .btn.primary { flex: 1; }
+dl.summary { margin: 0; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+dl.summary .item { display: flex; align-items: center; justify-content: space-between; gap: .8rem; padding: .7rem .9rem; background: var(--paper); }
+dl.summary .item + .item { border-top: 1px solid var(--line); }
+dl.summary dt { font-size: .75rem; color: var(--ink-soft); letter-spacing: .08em; text-transform: uppercase; }
+dl.summary dd { margin: 0; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.link { background: none; border: none; color: var(--rose); font-weight: 600; padding: .3rem; text-decoration: underline; text-underline-offset: 3px; }
+textarea { min-height: 8.5rem; resize: vertical; line-height: 1.5; }
+.note { margin: 0; font-size: .9rem; color: var(--ink-soft); }
+.copied { color: var(--rose-deep); font-weight: 600; }
+#waLink, #copyBtn { flex: 1 1 100%; }
+@media (max-width: 420px) { .step { --px: 1.1rem; --py: 1.4rem; } }
+</style>
+
+<div class="hearts" id="hearts" aria-hidden="true"></div>
+
+<main class="stage">
+  <div class="progress" id="progress" hidden aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+
+  <section class="step" data-step="0">
+    <p class="eyebrow">A question for you, Nidhi</p>
+    <h1 tabindex="-1">Nidhi, will you go on a date with me?</h1>
+    <p class="lead">You get to pick the day, the time and the place. First, just tell me if you'll come.</p>
+    <div class="row" id="answerRow">
+      <button class="btn primary" id="yesBtn" type="button">Yes, I'll go</button>
+      <span class="noslot" id="noSlot"><button class="btn" id="noBtn" type="button">No</button></span>
+    </div>
+    <p class="teasing" id="noMsg" aria-live="polite"></p>
+  </section>
+
+  <section class="step" data-step="1" hidden>
+    <p class="eyebrow">Step 1 of 4</p>
+    <h2 tabindex="-1">Which day works?</h2>
+    <p class="lead">Pick the day that suits you best.</p>
+    <div class="chips" id="dateChips"></div>
+    <div class="field">
+      <label for="dateCustom">Another day</label>
+      <input type="date" id="dateCustom">
+    </div>
+    <div class="nav">
+      <button class="btn ghost" type="button" data-back>Back</button>
+      <button class="btn primary" type="button" id="next1" disabled>Next</button>
+    </div>
+  </section>
+
+  <section class="step" data-step="2" hidden>
+    <p class="eyebrow">Step 2 of 4</p>
+    <h2 tabindex="-1">What time?</h2>
+    <p class="lead">Pick the time you like.</p>
+    <div class="chips" id="timeChips"></div>
+    <div class="field">
+      <label for="timeCustom">Another time</label>
+      <input type="time" id="timeCustom">
+    </div>
+    <div class="nav">
+      <button class="btn ghost" type="button" data-back>Back</button>
+      <button class="btn primary" type="button" id="next2" disabled>Next</button>
+    </div>
+  </section>
+
+  <section class="step" data-step="3" hidden>
+    <p class="eyebrow">Step 3 of 4</p>
+    <h2 tabindex="-1">Where shall we go?</h2>
+    <p class="lead">Pick a place, or type your own.</p>
+    <div class="chips wide" id="placeChips"></div>
+    <div class="field">
+      <label for="placeCustom">Somewhere else</label>
+      <input type="text" id="placeCustom" placeholder="Type a place" autocomplete="off">
+    </div>
+    <div class="nav">
+      <button class="btn ghost" type="button" data-back>Back</button>
+      <button class="btn primary" type="button" id="next3" disabled>Review</button>
+    </div>
+  </section>
+
+  <section class="step" data-step="4" hidden>
+    <p class="eyebrow">Step 4 of 4</p>
+    <h2 tabindex="-1">Ready to send?</h2>
+    <p class="lead">Check your answers, then press Submit to send them to me on WhatsApp.</p>
+    <dl class="summary">
+      <div class="item"><div><dt>Day</dt><dd id="sumDate"></dd></div><button class="link" type="button" data-goto="1">Change</button></div>
+      <div class="item"><div><dt>Time</dt><dd id="sumTime"></dd></div><button class="link" type="button" data-goto="2">Change</button></div>
+      <div class="item"><div><dt>Place</dt><dd id="sumPlace"></dd></div><button class="link" type="button" data-goto="3">Change</button></div>
+    </dl>
+    <div class="field">
+      <label for="msg">Your message</label>
+      <textarea id="msg" readonly></textarea>
+    </div>
+    <div class="row">
+      <a class="btn primary" id="waLink" href="#" target="_blank" rel="noopener noreferrer">Submit</a>
+      <button class="btn ghost" type="button" id="copyBtn">Copy message</button>
+    </div>
+    <p class="note" id="copyNote">WhatsApp will open with this message ready. Press Send there. If it doesn't open, copy the message and send it to me.</p>
+    <div class="nav">
+      <button class="btn ghost" type="button" data-back>Back</button>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  // WhatsApp number with country code, digits only. 01863337893 is a Bangladesh number, so 880 + 1863337893.
+  var WA_NUMBER = "8801863337893";
+
+  var WD = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  var WD_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  var MONTH = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  var PLACES = [
+    { label: "Café", hint: "Coffee and talking" },
+    { label: "Restaurant", hint: "Dinner together" },
+    { label: "By the lake", hint: "A walk and the sunset" },
+    { label: "Park", hint: "Under the open sky" },
+    { label: "Movie", hint: "Sitting side by side" },
+    { label: "Wherever you say", hint: "Your favourite spot" }
+  ];
+  var TIMES = [[11, 0], [13, 0], [15, 0], [16, 30], [18, 0], [19, 30]];
+
+  var state = { date: null, time: null, place: null };
+  var steps = Array.prototype.slice.call(document.querySelectorAll(".step"));
+  var progress = document.getElementById("progress");
+  var current = 0;
+
+  function dateLabel(d) { return WD[d.getDay()] + ", " + d.getDate() + " " + MONTH[d.getMonth()]; }
+  function timeLabel(h, m) {
+    var h12 = h % 12 || 12;
+    return h12 + ":" + String(m).padStart(2, "0") + " " + (h < 12 ? "AM" : "PM");
+  }
+
+  /* hearts in the background */
+  var heartsEl = document.getElementById("hearts");
+  var spots = [[6, 8, 38], [82, 6, 54], [48, 18, 28], [90, 42, 34], [10, 55, 60], [70, 64, 30], [34, 80, 46], [88, 86, 40], [18, 92, 26]];
+  spots.forEach(function (s, i) {
+    var ns = "http://www.w3.org/2000/svg";
+    var svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.style.left = s[0] + "%"; svg.style.top = s[1] + "%";
+    svg.style.width = s[2] + "px"; svg.style.height = s[2] + "px";
+    svg.style.setProperty("--d", (7 + (i % 4) * 2) + "s");
+    var path = document.createElementNS(ns, "path");
+    path.setAttribute("d", "M12 21s-8-4.9-9.6-10C1.400 7.600 3.600 4.500 6.700 4.500c2 0 3.600 1 5.300 3 1.700-2 3.300-3 5.300-3 3.100 0 5.300 3.100 4.300 6.500C20 16.100 12 21 12 21z");
+    svg.appendChild(path);
+    heartsEl.appendChild(svg);
+  });
+
+  /* step navigation */
+  function go(n) {
+    current = n;
+    steps.forEach(function (s, i) { s.hidden = i !== n; });
+    progress.hidden = n === 0;
+    Array.prototype.forEach.call(progress.children, function (seg, i) { seg.classList.toggle("on", i < n); });
+    if (n === 4) buildSummary();
+    window.scrollTo(0, 0);
+    var h = steps[n].querySelector("h1, h2");
+    if (h) h.focus({ preventScroll: true });
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-back]"), function (b) {
+    b.addEventListener("click", function () { go(Math.max(0, current - 1)); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-goto]"), function (b) {
+    b.addEventListener("click", function () { go(Number(b.getAttribute("data-goto"))); });
+  });
+
+  function pick(container, btn) {
+    Array.prototype.forEach.call(container.children, function (c) { c.setAttribute("aria-pressed", c === btn ? "true" : "false"); });
+  }
+  function clearPick(container) { pick(container, null); }
+
+  /* yes / no */
+  var yesBtn = document.getElementById("yesBtn");
+  var noBtn = document.getElementById("noBtn");
+  var noSlot = document.getElementById("noSlot");
+  var noMsg = document.getElementById("noMsg");
+  var teases = [
+    "Saying no won't work.",
+    "Think about it once more.",
+    "Did you notice the button is running away?",
+    "The No button doesn't work. Press Yes.",
+    "No point trying anymore.",
+    "The Yes button is getting bigger, by the way."
+  ];
+  var dodges = 0;
+
+  function overlaps(a, b, pad) {
+    return !(a.right + pad < b.left || a.left - pad > b.right || a.bottom + pad < b.top || a.top - pad > b.bottom);
+  }
+  var lastDodge = 0;
+  function dodge() {
+    var now = Date.now();
+    if (now - lastDodge < 300) return;
+    lastDodge = now;
+    if (!noBtn.classList.contains("fly")) {
+      noSlot.style.width = noBtn.offsetWidth + "px";
+      noSlot.style.height = noBtn.offsetHeight + "px";
+      noBtn.classList.add("fly");
+    }
+    dodges++;
+    var w = noBtn.offsetWidth, h = noBtn.offsetHeight, m = 16;
+    var maxX = Math.max(m, window.innerWidth - w - m);
+    var maxY = Math.max(m, window.innerHeight - h - m);
+    var yes = yesBtn.getBoundingClientRect();
+    var x = m, y = m;
+    for (var i = 0; i < 30; i++) {
+      x = m + Math.random() * (maxX - m);
+      y = m + Math.random() * (maxY - m);
+      var box = { left: x, top: y, right: x + w, bottom: y + h };
+      if (!overlaps(box, yes, 24)) break;
+    }
+    noBtn.style.left = x + "px";
+    noBtn.style.top = y + "px";
+    yesBtn.style.setProperty("--grow", Math.min(dodges, 9));
+    noMsg.textContent = teases[Math.min(dodges - 1, teases.length - 1)];
+  }
+  ["pointerenter", "pointerdown", "focus"].forEach(function (ev) { noBtn.addEventListener(ev, dodge); });
+  noBtn.addEventListener("touchstart", function (e) { e.preventDefault(); dodge(); }, { passive: false });
+  noBtn.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); dodge(); });
+  yesBtn.addEventListener("click", function () { go(1); });
+
+  /* date */
+  var dateChips = document.getElementById("dateChips");
+  var dateCustom = document.getElementById("dateCustom");
+  var next1 = document.getElementById("next1");
+  var today = new Date();
+  today = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  function ymd(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  dateCustom.min = ymd(today);
+  for (var i = 0; i < 9; i++) {
+    (function (i) {
+      var d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "chip"; b.setAttribute("aria-pressed", "false");
+      var top = i === 0 ? "Today" : i === 1 ? "Tomorrow" : WD_SHORT[d.getDay()];
+      b.innerHTML = "<small>" + top + "</small><span class=\"big\">" + d.getDate() + "</span><small>" + MONTH_SHORT[d.getMonth()] + "</small>";
+      b.addEventListener("click", function () {
+        state.date = d; pick(dateChips, b); dateCustom.value = ""; next1.disabled = false;
+      });
+      dateChips.appendChild(b);
+    })(i);
+  }
+  dateCustom.addEventListener("change", function () {
+    var p = dateCustom.value.split("-");
+    if (p.length === 3) {
+      state.date = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+      clearPick(dateChips); next1.disabled = false;
+    } else if (!dateChips.querySelector("[aria-pressed=true]")) { state.date = null; next1.disabled = true; }
+  });
+  next1.addEventListener("click", function () { go(2); });
+
+  /* time */
+  var timeChips = document.getElementById("timeChips");
+  var timeCustom = document.getElementById("timeCustom");
+  var next2 = document.getElementById("next2");
+  TIMES.forEach(function (t) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.setAttribute("aria-pressed", "false");
+    var label = timeLabel(t[0], t[1]);
+    b.innerHTML = "<span class=\"name\">" + label + "</span>";
+    b.addEventListener("click", function () {
+      state.time = label; pick(timeChips, b); timeCustom.value = ""; next2.disabled = false;
+    });
+    timeChips.appendChild(b);
+  });
+  timeCustom.addEventListener("change", function () {
+    var p = timeCustom.value.split(":");
+    if (p.length >= 2 && timeCustom.value) {
+      state.time = timeLabel(Number(p[0]), Number(p[1]));
+      clearPick(timeChips); next2.disabled = false;
+    } else if (!timeChips.querySelector("[aria-pressed=true]")) { state.time = null; next2.disabled = true; }
+  });
+  next2.addEventListener("click", function () { go(3); });
+
+  /* place */
+  var placeChips = document.getElementById("placeChips");
+  var placeCustom = document.getElementById("placeCustom");
+  var next3 = document.getElementById("next3");
+  PLACES.forEach(function (p) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.setAttribute("aria-pressed", "false");
+    b.innerHTML = "<span class=\"name\">" + p.label + "</span><small>" + p.hint + "</small>";
+    b.addEventListener("click", function () {
+      state.place = p.label; pick(placeChips, b); placeCustom.value = ""; next3.disabled = false;
+    });
+    placeChips.appendChild(b);
+  });
+  placeCustom.addEventListener("input", function () {
+    var v = placeCustom.value.trim();
+    if (v) { state.place = v; clearPick(placeChips); next3.disabled = false; }
+    else if (!placeChips.querySelector("[aria-pressed=true]")) { state.place = null; next3.disabled = true; }
+    else { state.place = placeChips.querySelector("[aria-pressed=true] .name").textContent; }
+  });
+  next3.addEventListener("click", function () { go(4); });
+
+  /* summary and WhatsApp */
+  var msg = document.getElementById("msg");
+  var waLink = document.getElementById("waLink");
+  var defaultNote = "WhatsApp will open with this message ready. Press Send there. If it doesn't open, copy the message and send it to me.";
+  function buildSummary() {
+    var dl = dateLabel(state.date);
+    document.getElementById("sumDate").textContent = dl;
+    document.getElementById("sumTime").textContent = state.time;
+    document.getElementById("sumPlace").textContent = state.place;
+    var text = "Hi, it's Nidhi. Yes, I'll go on a date with you! 💕\n\n📅 Day: " + dl + "\n⏰ Time: " + state.time + "\n📍 Place: " + state.place;
+    msg.value = text;
+    waLink.href = "https://wa.me/" + WA_NUMBER + "?text=" + encodeURIComponent(text);
+    var note = document.getElementById("copyNote");
+    note.className = "note";
+    note.textContent = defaultNote;
+  }
+  document.getElementById("copyBtn").addEventListener("click", function () {
+    var note = document.getElementById("copyNote");
+    function ok() { note.className = "note copied"; note.textContent = "Copied. Now paste it in WhatsApp and send it to me."; }
+    function fallback() { msg.focus(); msg.select(); }
+    try {
+      navigator.clipboard.writeText(msg.value).then(ok, fallback);
+    } catch (e) { fallback(); }
+  });
+})();
+</script>
+
+</body></html>
